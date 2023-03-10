@@ -17,3 +17,6 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::get('/getPokemon', 'App\Http\Controllers\PokemonController@getPokemon');
+Route::get('/getPokemonsByType', 'App\Http\Controllers\PokemonController@getPokemonsByType');
