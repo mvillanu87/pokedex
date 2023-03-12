@@ -22,7 +22,7 @@ class PokemonController extends Controller
         $pokemon = $this->searchPokemon($request->name);
         
         if ($pokemon->isEmpty()) {
-            return response()->json(['msj' => 'No existe el pokemon ' . $request->name]);
+            return response()->json(['error' => 'No existe el pokemon ' . $request->name], 400);
         }
         
         //Trae el pokemon buscado con su tipo
@@ -39,21 +39,21 @@ class PokemonController extends Controller
         //Validacion
         $validar = $this->validatePokemon($request->type, 'type');
         if (!$validar['procesar']) {
-            return response()->json(['error' => $validar['comentario']], 201);
+            return response()->json(['error' => $validar['comentario']], 400);
         }
         
         //Busca el tipo
         $type = $this->searchType($request->type);
         
         if ($type->isEmpty()) {
-            return response()->json(['msj' => 'No existe el tipo ' . $request->type]);
+            return response()->json(['error' => 'No existe el tipo ' . $request->type], 400);
         }
         
         //Trae todos los pokemon de un tipo
         $resultado = $this->searchPokemonByType('types.type_name', $request->type);
         
         if ($resultado->isEmpty()) {
-            return response()->json(['msj' => 'No existen pokemon del tipo' . $request->type]);
+            return response()->json(['error' => 'No existen pokemon del tipo' . $request->type], 400);
         } else {
             return response()->json($resultado);
         }
