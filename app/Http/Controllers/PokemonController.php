@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pokemon;
+use App\Models\Types;
 use Illuminate\Http\Request;
 
 class PokemonController extends Controller
@@ -17,13 +18,18 @@ class PokemonController extends Controller
             return response()->json(['error' => $validar['comentario']], 400);
         }
         
-        $resultado = $this->searchPokemon('pokemon.pok_name', $request->name);
+        //Busca el pokemon
+        $pokemon = $this->searchPokemon($request->name);
         
-        if ($resultado->isEmpty()) {
-            return response()->json(['msj' => 'No existe el pokemon']);
-        } else {
-            return response()->json($resultado);
+        if ($pokemon->isEmpty()) {
+            return response()->json(['msj' => 'No existe el pokemon ' . $request->name]);
         }
+        
+        //Trae el pokemon buscado con su tipo
+        $resultado = $this->searchPokemonByType('pokemon.pok_name', $request->name);
+ 
+        return response()->json($resultado);
+
     }
        
     public function getPokemonsByType(Request $request) {
@@ -34,12 +40,20 @@ class PokemonController extends Controller
         $validar = $this->validatePokemon($request->type, 'type');
         if (!$validar['procesar']) {
             return response()->json(['error' => $validar['comentario']], 201);
-        }        
+        }
         
-        $resultado = $this->searchPokemon('types.type_name', $request->type);
+        //Busca el tipo
+        $type = $this->searchType($request->type);
+        
+        if ($type->isEmpty()) {
+            return response()->json(['msj' => 'No existe el tipo ' . $request->type]);
+        }
+        
+        //Trae todos los pokemon de un tipo
+        $resultado = $this->searchPokemonByType('types.type_name', $request->type);
         
         if ($resultado->isEmpty()) {
-            return response()->json(['msj' => 'No existe pokemon de ese tipo']);
+            return response()->json(['msj' => 'No existen pokemon del tipo' . $request->type]);
         } else {
             return response()->json($resultado);
         }
@@ -66,9 +80,26 @@ class PokemonController extends Controller
         return ['procesar' => $procesar, 'comentario' => $mensaje];
     }
     
-    private function searchPokemon($columna, $parametro) {
+    private function searchPokemon($name) {
         
-        //Metodo de busqueda
+        //Metodo que busca un pokemon por nombre
+        
+        $data = Pokemon::where('pok_name', $name)->get();
+        return $data;
+        
+    }
+    
+    private function searchType($type) {
+        
+        //Metodo que busca un tipo/equipo/especialidad por nombre
+        
+        $data = Types::where('type_name', $type)->get();
+        return $data;
+    }
+    
+    private function searchPokemonByType($columna, $parametro) {
+        
+        //Metodo que busca un pokemon por tipo
         
         $data = Pokemon::select('pokemon.pok_id AS id',
                                 'pokemon.pok_name AS name', 
